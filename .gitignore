@@ -1,0 +1,7 @@
+.env
+venv/
+__pycache__/
+post_log.txt
+post_error.txt
+*.log
+.DS_Store
