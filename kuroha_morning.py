@@ -8,27 +8,37 @@ from datetime import datetime
 import tweepy
 from dotenv import load_dotenv
 
-# ===== .env 読み込み =====
+# ベースディレクトリ
 BASE_DIR = Path(__file__).resolve().parent
-load_dotenv(dotenv_path=str(BASE_DIR / ".env"))
 
-# ===== v2 Client =====
-client = tweepy.Client(
-    consumer_key=os.getenv("CONSUMER_KEY"),
-    consumer_secret=os.getenv("CONSUMER_SECRET"),
-    access_token=os.getenv("ACCESS_TOKEN"),
-    access_token_secret=os.getenv("ACCESS_TOKEN_SECRET"),
-    bearer_token=os.getenv("BEARER_TOKEN")
-)
+# .env が存在する場合のみ読み込む（GitHub Actionsでは存在しない）
+env_path = BASE_DIR / ".env"
+if env_path.exists():
+    load_dotenv(dotenv_path=str(env_path))
 
-# ===== v1.1（画像アップロード用）=====
+# 環境変数の取得
+CONSUMER_KEY = os.getenv("CONSUMER_KEY")
+CONSUMER_SECRET = os.getenv("CONSUMER_SECRET")
+ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
+ACCESS_TOKEN_SECRET = os.getenv("ACCESS_TOKEN_SECRET")
+BEARER_TOKEN = os.getenv("BEARER_TOKEN")
+
+# Tweepy認証
 auth = tweepy.OAuth1UserHandler(
-    os.getenv("CONSUMER_KEY"),
-    os.getenv("CONSUMER_SECRET"),
-    os.getenv("ACCESS_TOKEN"),
-    os.getenv("ACCESS_TOKEN_SECRET")
+    CONSUMER_KEY,
+    CONSUMER_SECRET,
+    ACCESS_TOKEN,
+    ACCESS_TOKEN_SECRET
 )
-api_v1 = tweepy.API(auth)
+
+api = tweepy.API(auth)
+client = tweepy.Client(
+    bearer_token=BEARER_TOKEN,
+    consumer_key=CONSUMER_KEY,
+    consumer_secret=CONSUMER_SECRET,
+    access_token=ACCESS_TOKEN,
+    access_token_secret=ACCESS_TOKEN_SECRET
+)
 
 # ===== 朝トレンド取得 =====
 def fetch_materials():
