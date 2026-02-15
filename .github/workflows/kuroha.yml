@@ -34,6 +34,21 @@ jobs:
               echo "$k is present"
             fi
           done
+      - name: Python env sanity check (no values)
+        env:
+          CONSUMER_KEY: ${{ secrets.CONSUMER_KEY }}
+          CONSUMER_SECRET: ${{ secrets.CONSUMER_SECRET }}
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+          BEARER_TOKEN: ${{ secrets.BEARER_TOKEN }}
+        run: |
+          python - << 'PY'
+          import os
+          keys = ["CONSUMER_KEY","CONSUMER_SECRET","ACCESS_TOKEN","ACCESS_TOKEN_SECRET","BEARER_TOKEN"]
+          for k in keys:
+              v = os.getenv(k)
+              print(k, "is None" if v is None else "present", "len", (0 if v is None else len(v)))
+          PY
 
       - name: Run morning bot
         env:
