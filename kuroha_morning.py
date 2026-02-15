@@ -110,7 +110,7 @@ print("IMAGE:", image_path.name if image_path else "None")
 
 # ===== 投稿 =====
 if image_path:
-    media = api_v1.media_upload(str(image_path))
+    media = api.media_upload(str(image_path))
     response = client.create_tweet(text=text, media_ids=[media.media_id])
 else:
     response = client.create_tweet(text=text)
