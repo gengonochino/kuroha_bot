@@ -1,40 +1,35 @@
 name: kuroha bot
 
 on:
+  schedule:
+    - cron: "30 0 * * *"   # 09:30 JST
+    - cron: "0 13 * * *"   # 22:00 JST
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "Which job to run"
+        required: true
+        default: "morning"
+        type: choice
+        options:
+          - morning
+          - evening
 
 jobs:
   run:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Check env presence (no values)
-        env:
-          CONSUMER_KEY: ${{ secrets.CONSUMER_KEY }}
-          CONSUMER_SECRET: ${{ secrets.CONSUMER_SECRET }}
-          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-          BEARER_TOKEN: ${{ secrets.BEARER_TOKEN }}
-        run: |
-          for k in CONSUMER_KEY CONSUMER_SECRET ACCESS_TOKEN ACCESS_TOKEN_SECRET BEARER_TOKEN; do
-            if [ -z "${!k}" ]; then
-              echo "$k is MISSING"
-              exit 1
-            else
-              echo "$k is present"
-            fi
-          done
-      - name: Python env sanity check (no values)
+      # Secretsが読めてない/空をここで即止める（値は出さない）
+      - name: Validate secrets (no values)
         env:
           CONSUMER_KEY: ${{ secrets.CONSUMER_KEY }}
           CONSUMER_SECRET: ${{ secrets.CONSUMER_SECRET }}
@@ -43,19 +38,46 @@ jobs:
           BEARER_TOKEN: ${{ secrets.BEARER_TOKEN }}
         run: |
           python - << 'PY'
-          import os
+          import os, sys
           keys = ["CONSUMER_KEY","CONSUMER_SECRET","ACCESS_TOKEN","ACCESS_TOKEN_SECRET","BEARER_TOKEN"]
+          missing = []
           for k in keys:
-              v = os.getenv(k)
-              print(k, "is None" if v is None else "present", "len", (0 if v is None else len(v)))
+            v = os.getenv(k)
+            # None（未設定）と 空文字（空）を両方弾く
+            if v is None or v.strip() == "":
+              missing.append(k)
+            else:
+              print(f"{k}: present (len={len(v)})")
+          if missing:
+            print("MISSING/EMPTY:", ", ".join(missing))
+            sys.exit(1)
           PY
 
-      - name: Run morning bot
+      - name: Decide mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "MODE=${{ inputs.mode }}" >> $GITHUB_OUTPUT
+          else
+            # schedule: 00:30 UTC = morning, 13:00 UTC = evening
+            if [ "${{ github.event.schedule }}" = "30 0 * * *" ]; then
+              echo "MODE=morning" >> $GITHUB_OUTPUT
+            else
+              echo "MODE=evening" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Run bot
         env:
           CONSUMER_KEY: ${{ secrets.CONSUMER_KEY }}
           CONSUMER_SECRET: ${{ secrets.CONSUMER_SECRET }}
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
           BEARER_TOKEN: ${{ secrets.BEARER_TOKEN }}
-        run: python kuroha_morning.py
+        run: |
+          if [ "${{ steps.mode.outputs.MODE }}" = "morning" ]; then
+            python kuroha_morning.py
+          else
+            python kuroha_evening.py
+          fi
 
