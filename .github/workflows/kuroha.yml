@@ -1,7 +1,6 @@
 name: kuroha bot
 
 on:
-  schedule:
   workflow_dispatch:
     inputs:
       mode:
