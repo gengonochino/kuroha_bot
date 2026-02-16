@@ -4,7 +4,7 @@ import os
 import random
 import re
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import tweepy
 from dotenv import load_dotenv
 
@@ -80,7 +80,7 @@ def decide_mood(texts):
     return "calm"
 
 def build_text(mood):
-    now_str = datetime.now().strftime('%Y年%m月%d日 %H:%M頃')
+now_str = datetime.now(timezone(timedelta(hours=9))).strftime('%Y年%m月%d日 %H:%M頃')
 
     if mood == "sleepy":
         body = "まだ眠い人、多そうだね…は〜。\nゆっくりでいいよ、今日も生きてるだけでえらい。"
