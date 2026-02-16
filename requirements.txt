@@ -7,3 +7,4 @@ requests==2.32.5
 requests-oauthlib==2.0.0
 tweepy==4.16.0
 urllib3==2.6.3
+google-genai
