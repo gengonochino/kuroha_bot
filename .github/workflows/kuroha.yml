@@ -1,6 +1,8 @@
 name: kuroha bot
 
 on:
+  schedule:
+    - cron: "0 21 * * *"   # 6:00 JST
   workflow_dispatch:
     inputs:
       mode:
@@ -32,11 +34,7 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "MODE=${{ inputs.mode }}" >> $GITHUB_OUTPUT
           else
-            if [ "${{ github.event.schedule }}" = "30 0 * * *" ]; then
-              echo "MODE=morning" >> $GITHUB_OUTPUT
-            else
-              echo "MODE=evening" >> $GITHUB_OUTPUT
-            fi
+            echo "MODE=morning" >> $GITHUB_OUTPUT
           fi
 
       - name: Run bot
@@ -47,7 +45,6 @@ jobs:
           ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
           BEARER_TOKEN: ${{ secrets.BEARER_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-
         run: |
           if [ "${{ steps.mode.outputs.MODE }}" = "morning" ]; then
             python kuroha_morning.py
