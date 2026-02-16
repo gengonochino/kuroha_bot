@@ -146,12 +146,26 @@ print("TEXT:\n", text)
 # ===== 画像選択（mood連動）=====
 image_dir = BASE_DIR / "images"
 
-emotion_map = {
-    "sleepy": ["neutral_calm", "embarrassed_blush"],
-    "serious": ["exasperated_deadpank"],
-    "season": ["surprised_shock", "curious_tilt"],
-    "normal": ["happy_fullsmile", "excited_sparkle", "mischievous_grin"],
+IMAGE_MOOD_MAP = {
+    "calm": ["neutral_calm"],
+    "happy": ["happy_fullsmile"],
+    "curious": ["curious_tilt"],
+    "tired": ["exasperated_deadpank"],
+    "embarrassed": ["embarrassed_blush"],
+    "shocked": ["surprised_shock"],
+    "excited": ["excited_sparkle"],
+    "mischievous": ["mischievous_grin"],
 }
+
+def pick_image(base_dir, mood):
+    image_dir = base_dir / "images"
+    tags = IMAGE_MOOD_MAP.get(mood, ["neutral_calm"])
+
+    candidates = []
+    for tag in tags:
+        candidates.extend(list(image_dir.glob(f"kuroha_{tag}*.png")))
+
+    return random.choice(candidates) if candidates else None
 
 keywords = emotion_map.get(mood, ["neutral_calm"])
 
@@ -159,7 +173,7 @@ candidates = []
 for kw in keywords:
     candidates.extend(list(image_dir.glob(f"kuroha_{kw}*.png")))
 
-image_path = random.choice(candidates) if candidates else None
+image_path = pick_image(BASE_DIR, mood)
 
 print("IMAGE:", image_path.name if image_path else "None")
 
