@@ -80,10 +80,50 @@ def build_text(mood):
 {body}
 ♡これは黒羽の自動投稿だよ～🪶"""
 
+def build_text_gemini(mood, materials):
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        return build_text(mood)
+
+    try:
+        from google import genai
+
+        now_str = datetime.now().strftime('%Y年%m月%d日 %H:%M頃')
+        bullets = "\n".join(f"- {t[:80]}" for t in materials[:8])
+
+        prompt = f"""あなたはX投稿用のキャラクター「黒羽」。
+日本語。1投稿に収まる短文（200〜260字目安）。
+感情表現は豊かに。ただし過剰に説明しない。
+絵文字は最大2個まで。
+最後に必ず「♡これは黒羽の自動投稿だよ～🪶」を入れる。
+
+現在時刻: {now_str}
+推定ムード: {mood}
+
+参考（今朝のつぶやき断片）:
+{bullets}
+
+黒羽として自然な朝の投稿を1本だけ生成して。
+"""
+
+        client_g = genai.Client(api_key=api_key)
+        resp = client_g.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=prompt
+        )
+
+        text = (resp.text or "").strip()
+        return text if text else build_text(mood)
+
+    except Exception as e:
+        print("Gemini error:", e)
+        return build_text(mood)
+
+
 # ===== 実行 =====
 materials = fetch_materials()
 mood = decide_mood(materials)
-text = build_text(mood)
+text = build_text_gemini(mood, materials)
 
 print("MOOD:", mood)
 print("TEXT:\n", text)
