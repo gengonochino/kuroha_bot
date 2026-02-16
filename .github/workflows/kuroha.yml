@@ -2,8 +2,6 @@ name: kuroha bot
 
 on:
   schedule:
-    - cron: "30 0 * * *"
-    - cron: "0 13 * * *"
   workflow_dispatch:
     inputs:
       mode:
@@ -49,6 +47,8 @@ jobs:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
           BEARER_TOKEN: ${{ secrets.BEARER_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
         run: |
           if [ "${{ steps.mode.outputs.MODE }}" = "morning" ]; then
             python kuroha_morning.py
