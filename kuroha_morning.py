@@ -167,12 +167,6 @@ def pick_image(base_dir, mood):
 
     return random.choice(candidates) if candidates else None
 
-keywords = emotion_map.get(mood, ["neutral_calm"])
-
-candidates = []
-for kw in keywords:
-    candidates.extend(list(image_dir.glob(f"kuroha_{kw}*.png")))
-
 image_path = pick_image(BASE_DIR, mood)
 
 print("IMAGE:", image_path.name if image_path else "None")
