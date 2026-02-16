@@ -56,13 +56,28 @@ def fetch_materials():
 def decide_mood(texts):
     joined = " ".join(texts)
 
-    if re.search("眠|ねむ|だる|つら|しんど", joined):
-        return "sleepy"
-    if re.search("仕事|学校|バイト|会議", joined):
-        return "serious"
-    if re.search("寒|暑|雨|雪", joined):
-        return "season"
-    return "normal"
+    if re.search(r"(眠|ねむ|だる|寝不足|疲|つかれ|しんど|限界|無理)", joined):
+        return "tired"
+
+    if re.search(r"(やった|最高|嬉し|うれし|楽しい|たのしい|よかった|幸せ)", joined):
+        return "happy"
+
+    if re.search(r"(え\?|まじ|マジ|嘘|うそ|なんで|びっくり|驚|ショック)", joined):
+        return "shocked"
+
+    if re.search(r"(緊張|不安|心配|こわ|怖|恥|はずかし|照)", joined):
+        return "embarrassed"
+
+    if re.search(r"(楽しみ|たのしみ|わくわく|ワクワク|期待|盛り上|テンション)", joined):
+        return "excited"
+
+    if re.search(r"(気になる|どうなん|何それ|なにそれ|不思議|なるほど|調べ|知りたい)", joined):
+        return "curious"
+
+    if re.search(r"(ふふ|にや|ニヤ|いたずら|煽|ちょろ|悪い子|悪巧み|企み)", joined):
+        return "mischievous"
+
+    return "calm"
 
 def build_text(mood):
     now_str = datetime.now().strftime('%Y年%m月%d日 %H:%M頃')
